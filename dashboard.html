@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sunrise Hospital | Reception Dashboard</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      background-color: #f5f7fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .navbar {
+      background-color: #007bff;
+      color: white;
+    }
+    .navbar-brand {
+      color: white !important;
+      font-weight: bold;
+    }
+    .sidebar {
+      background-color: #007bff;
+      color: white;
+      min-height: calc(100vh - 56px);
+      padding-top: 20px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      padding: 10px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #0056b3;
+      font-weight: bold;
+    }
+    .section-title {
+      border-bottom: 2px solid #007bff;
+      margin-bottom: 15px;
+      padding-bottom: 5px;
+    }
+    .summary-card {
+      color: white;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .summary-icon {
+      font-size: 2rem;
+      opacity: 0.8;
+    }
+    .dashboard-section {
+      display: none;
+    }
+    .dashboard-section.active {
+      display: block;
+    }
+    .table-responsive {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .patient-photo {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      background-color: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6c757d;
+    }
+    .form-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark mb-0">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#"><i class="fas fa-hospital"></i> Sunrise Hospital</a>
+      <div class="d-flex align-items-center">
+        <span class="me-3"><i class="fas fa-user me-1"></i> Receptionist: <strong id="receptionistName">Loading...</strong></span>
+        <a href="logout.php" class="btn btn-danger btn-sm">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-2 sidebar">
+        <a href="#summary" class="nav-link active" data-section="summary"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <a href="#patients" class="nav-link" data-section="patients"><i class="fas fa-users"></i> Patients</a>
+        <a href="#appointments" class="nav-link" data-section="appointments"><i class="fas fa-calendar-check"></i> Appointments</a>
+        <a href="#billing" class="nav-link" data-section="billing"><i class="fas fa-file-invoice-dollar"></i> Billing</a>
+        <a href="#reports" class="nav-link" data-section="reports"><i class="fas fa-chart-bar"></i> Reports</a>
+        <a href="#settings" class="nav-link" data-section="settings"><i class="fas fa-cog"></i> Settings</a>
+      </div>
+
+      <div class="col-md-10 p-4">
+        <!-- SUMMARY SECTION -->
+        <section id="summary" class="dashboard-section active">
+          <h4 class="section-title">📊 Dashboard Summary</h4>
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <div class="summary-card bg-primary text-center">
+                <i class="fas fa-user-injured summary-icon"></i>
+                <h5>Patients Today</h5>
+                <h3 id="patientsToday">0</h3>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="summary-card bg-success text-center">
+                <i class="fas fa-calendar-day summary-icon"></i>
+                <h5>Appointments</h5>
+                <h3 id="appointmentsToday">0</h3>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="summary-card bg-warning text-center">
+                <i class="fas fa-coins summary-icon"></i>
+                <h5>Payments</h5>
+                <h3 id="totalPayments">KSh 0</h3>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="summary-card bg-danger text-center">
+                <i class="fas fa-exclamation-triangle summary-icon"></i>
+                <h5>Emergencies</h5>
+                <h3 id="emergencies">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-8">
+              <div class="form-section">
+                <h5 class="mb-3">Recent Appointments</h5>
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="recentAppointments">
+                      <tr>
+                        <td colspan="4" class="text-center text-muted">Loading...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-section">
+                <h5 class="mb-3">Quick Actions</h5>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-outline-primary" id="quickAddPatient">
+                    <i class="fas fa-user-plus me-2"></i>Add New Patient
+                  </button>
+                  <button class="btn btn-outline-success" id="quickSchedule">
+                    <i class="fas fa-calendar-plus me-2"></i>Schedule Appointment
+                  </button>
+                  <button class="btn btn-outline-warning" id="quickGenerateBill">
+                    <i class="fas fa-file-invoice me-2"></i>Generate Bill
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PATIENTS SECTION -->
+        <section id="patients" class="dashboard-section">
+          <h4 class="section-title">👥 Patient Management</h4>
+          
+          <div class="form-section">
+            <h5 class="mb-3">Register New Patient</h5>
+            <form id="patientForm" action="add_patient.php" method="POST">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Full Name *</label>
+                  <input type="text" class="form-control" name="full_name" required>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Age *</label>
+                  <input type="number" class="form-control" name="age" required>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label">Gender *</label>
+                  <select class="form-select" name="gender" required>
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Contact *</label>
+                  <input type="tel" class="form-control" name="contact" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-control" name="email">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Address</label>
+                  <input type="text" class="form-control" name="address">
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label">Medical History</label>
+                  <textarea class="form-control" name="medical_history" rows="2"></textarea>
+                </div>
+                <div class="col-md-12">
+                  <button type="submit" class="btn btn-primary">Register Patient</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="form-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0">Patient Records</h5>
+              <div class="input-group" style="width: 300px;">
+                <input type="text" class="form-control" id="patientSearchInput" placeholder="Search patients...">
+                <button class="btn btn-outline-secondary" type="button">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>ID</th>
+                    <th>Photo</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Contact</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="patientRecords">
+                  <tr>
+                    <td colspan="7" class="text-center text-muted">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- APPOINTMENTS SECTION -->
+        <section id="appointments" class="dashboard-section">
+          <h4 class="section-title">📅 Appointment Management</h4>
+          
+          <div class="form-section">
+            <h5 class="mb-3">Schedule New Appointment</h5>
+            <form id="appointmentForm" action="schedule_appointment.php" method="POST">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Patient *</label>
+                  <select class="form-select" name="patient_id" required>
+                    <option value="">Select Patient</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Doctor *</label>
+                  <select class="form-select" name="doctor" required>
+                    <option value="">Select Doctor</option>
+                    <option value="Dr. Kimani">Dr. Kimani</option>
+                    <option value="Dr. Aisha">Dr. Aisha</option>
+                    <option value="Dr. Johnson">Dr. Johnson</option>
+                    <option value="Dr. Wangari">Dr. Wangari</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Department *</label>
+                  <select class="form-select" name="department" required>
+                    <option value="">Select Department</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Pediatrics">Pediatrics</option>
+                    <option value="Orthopedics">Orthopedics</option>
+                    <option value="Dermatology">Dermatology</option>
+                    <option value="Neurology">Neurology</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Date *</label>
+                  <input type="date" class="form-control" name="appointment_date" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Time *</label>
+                  <input type="time" class="form-control" name="appointment_time" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Status</label>
+                  <select class="form-select" name="status">
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label">Notes</label>
+                  <textarea class="form-control" name="notes" rows="2"></textarea>
+                </div>
+                <div class="col-md-12">
+                  <button type="submit" class="btn btn-primary">Schedule Appointment</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="form-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h5 class="mb-0">Appointment Calendar</h5>
+                <small class="text-muted" id="appointmentDateLabel"></small>
+              </div>
+              <div>
+                <button class="btn btn-outline-primary btn-sm" id="todayBtn">Today</button>
+                <button class="btn btn-outline-secondary btn-sm" id="prevDayBtn"><i class="fas fa-chevron-left"></i></button>
+                <button class="btn btn-outline-secondary btn-sm" id="nextDayBtn"><i class="fas fa-chevron-right"></i></button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Time</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="appointmentCalendar">
+                  <tr>
+                    <td colspan="6" class="text-center text-muted">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- BILLING SECTION -->
+        <section id="billing" class="dashboard-section">
+          <h4 class="section-title">💰 Billing & Payments</h4>
+          
+          <div class="form-section">
+            <h5 class="mb-3">Generate New Bill</h5>
+            <form id="billingForm" action="generate_bill.php" method="POST">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Patient *</label>
+                  <select class="form-select" name="patient_id" required>
+                    <option value="">Select Patient</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Service Type *</label>
+                  <select class="form-select" name="service_type" required>
+                    <option value="">Select Service</option>
+                    <option value="Consultation">Consultation</option>
+                    <option value="Lab Test">Lab Test</option>
+                    <option value="X-Ray">X-Ray</option>
+                    <option value="Surgery">Surgery</option>
+                    <option value="Medication">Medication</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Amount (KSh) *</label>
+                  <input type="number" class="form-control" name="amount" step="0.01" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Payment Method *</label>
+                  <select class="form-select" name="payment_method" required>
+                    <option value="Cash">Cash</option>
+                    <option value="MPesa">MPesa</option>
+                    <option value="Card">Card</option>
+                    <option value="Insurance">Insurance</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Status</label>
+                  <select class="form-select" name="status">
+                    <option value="Pending">Pending</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Partial">Partial Payment</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Date *</label>
+                  <input type="date" class="form-control" name="billing_date" required>
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-control" name="description" rows="2"></textarea>
+                </div>
+                <div class="col-md-12">
+                  <button type="submit" class="btn btn-success">Generate Bill</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="form-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0">Billing Records</h5>
+              <div class="input-group" style="width: 300px;">
+                <input type="text" class="form-control" placeholder="Search bills...">
+                <button class="btn btn-outline-secondary" type="button">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Bill ID</th>
+                    <th>Patient</th>
+                    <th>Service</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="billingRecords">
+                  <tr>
+                    <td colspan="7" class="text-center text-muted">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- REPORTS SECTION -->
+        <section id="reports" class="dashboard-section">
+          <h4 class="section-title">📈 Reports & Analytics</h4>
+          
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="form-section">
+                <h5 class="mb-3">Patient Statistics</h5>
+                <canvas id="patientChart" height="250"></canvas>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-section">
+                <h5 class="mb-3">Revenue Overview</h5>
+                <canvas id="revenueChart" height="250"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h5 class="mb-3">Appointment Trends</h5>
+            <canvas id="appointmentChart" height="100"></canvas>
+          </div>
+        </section>
+
+        <!-- SETTINGS SECTION -->
+        <section id="settings" class="dashboard-section">
+          <h4 class="section-title">⚙️ System Settings</h4>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-section mb-4">
+                <h5 class="mb-3">User Profile</h5>
+                <form id="profileForm" action="update_profile.php" method="POST">
+                  <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-control" name="full_name" id="profileFullName">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" name="username" id="profileUsername">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" id="profileEmail">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" class="form-control" name="phone" id="profilePhone">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-section mb-4">
+                <h5 class="mb-3">Change Password</h5>
+                <form id="passwordForm" action="change_password.php" method="POST">
+                  <div class="mb-3">
+                    <label class="form-label">Current Password</label>
+                    <input type="password" class="form-control" name="current_password">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">New Password</label>
+                    <input type="password" class="form-control" name="new_password">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-control" name="confirm_password">
+                  </div>
+                  <button type="submit" class="btn btn-warning">Change Password</button>
+                </form>
+              </div>
+              
+              <div class="form-section">
+                <h5 class="mb-3">System Preferences</h5>
+                <form id="preferencesForm" action="update_preferences.php" method="POST">
+                  <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="email_notifications" id="emailNotifications" checked>
+                    <label class="form-check-label" for="emailNotifications">Email Notifications</label>
+                  </div>
+                  <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="sms_notifications" id="smsNotifications">
+                    <label class="form-check-label" for="smsNotifications">SMS Notifications</label>
+                  </div>
+                  <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="auto_backup" id="autoBackup" checked>
+                    <label class="form-check-label" for="autoBackup">Auto Backup</label>
+                  </div>
+                  <button type="submit" class="btn btn-outline-primary">Save Preferences</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const navLinks = document.querySelectorAll('.nav-link');
+    const dashboardSections = document.querySelectorAll('.dashboard-section');
+    const receptionistNameEl = document.getElementById('receptionistName');
+    const patientsTodayEl = document.getElementById('patientsToday');
+    const appointmentsTodayEl = document.getElementById('appointmentsToday');
+    const totalPaymentsEl = document.getElementById('totalPayments');
+    const emergenciesEl = document.getElementById('emergencies');
+    const recentAppointmentsBody = document.getElementById('recentAppointments');
+    const patientRecordsBody = document.getElementById('patientRecords');
+    const appointmentCalendarBody = document.getElementById('appointmentCalendar');
+    const billingRecordsBody = document.getElementById('billingRecords');
+    const patientSelects = document.querySelectorAll('select[name="patient_id"]');
+    const todayBtn = document.getElementById('todayBtn');
+    const prevDayBtn = document.getElementById('prevDayBtn');
+    const nextDayBtn = document.getElementById('nextDayBtn');
+    const appointmentDateLabel = document.getElementById('appointmentDateLabel');
+    const patientSearchInput = document.getElementById('patientSearchInput');
+
+    let patientsCache = [];
+    let currentCalendarDate = new Date();
+
+    // Navigation
+    navLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetSection = this.getAttribute('data-section');
+        navLinks.forEach(nav => nav.classList.remove('active'));
+        this.classList.add('active');
+        dashboardSections.forEach(section => {
+          section.classList.remove('active');
+          if (section.id === targetSection) {
+            section.classList.add('active');
+          }
+        });
+      });
+    });
+
+    // Quick Actions
+    document.getElementById('quickAddPatient').addEventListener('click', () => setActiveSection('patients'));
+    document.getElementById('quickSchedule').addEventListener('click', () => setActiveSection('appointments'));
+    document.getElementById('quickGenerateBill').addEventListener('click', () => setActiveSection('billing'));
+
+    function setActiveSection(sectionId) {
+      navLinks.forEach(nav => {
+        nav.classList.toggle('active', nav.getAttribute('data-section') === sectionId);
+      });
+      dashboardSections.forEach(section => {
+        section.classList.toggle('active', section.id === sectionId);
+      });
+    }
+
+    // Patient Search
+    if (patientSearchInput) {
+      patientSearchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const filtered = patientsCache.filter(patient =>
+          patient.full_name.toLowerCase().includes(query) ||
+          String(patient.contact).toLowerCase().includes(query)
+        );
+        renderPatientRecords(filtered);
+      });
+    }
+
+    // Calendar Navigation
+    todayBtn.addEventListener('click', () => {
+      currentCalendarDate = new Date();
+      loadAppointmentCalendar();
+    });
+
+    prevDayBtn.addEventListener('click', () => {
+      currentCalendarDate.setDate(currentCalendarDate.getDate() - 1);
+      loadAppointmentCalendar();
+    });
+
+    nextDayBtn.addEventListener('click', () => {
+      currentCalendarDate.setDate(currentCalendarDate.getDate() + 1);
+      loadAppointmentCalendar();
+    });
+
+    // Utility Functions
+    async function fetchJson(url, options = {}) {
+      try {
+        const response = await fetch(url, {
+          credentials: 'same-origin',
+          ...options,
+        });
+        
+        // Read response text once
+        const text = await response.text();
+        
+        // Check if response is ok
+        if (!response.ok) {
+          // Try to get error message from response
+          let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+          if (text) {
+            try {
+              const errorData = JSON.parse(text);
+              errorMessage = errorData.message || errorMessage;
+            } catch (e) {
+              // If response is not JSON, use text
+              errorMessage = text.substring(0, 200);
+            }
+          }
+          throw new Error(errorMessage);
+        }
+        
+        // Parse JSON response
+        if (!text) {
+          throw new Error('Empty response from server');
+        }
+        
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error('JSON parse error:', e);
+          console.error('Response text:', text);
+          throw new Error('Invalid JSON response from server: ' + text.substring(0, 100));
+        }
+        
+        // Check if status is success
+        if (data.status !== 'success') {
+          throw new Error(data.message || 'Request failed');
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('Fetch error for', url, ':', error);
+        throw error;
+      }
+    }
+
+    const formatCurrency = (amount) => {
+      const value = Number(amount) || 0;
+      return `KSh ${value.toLocaleString('en-KE', { minimumFractionDigits: 0 })}`;
+    };
+
+    const formatAppointmentDateLabel = (date) => {
+      return new Intl.DateTimeFormat('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      }).format(date);
+    };
+
+    // Load Dashboard Data
+    async function loadDashboardData() {
+      // Show loading state
+      document.querySelectorAll('.text-center.text-muted').forEach(el => {
+        if (el.textContent.includes('Loading') || el.textContent.includes('No')) {
+          el.textContent = 'Loading...';
+        }
+      });
+      
+      const errors = [];
+      let authError = false;
+      
+      // Load each section independently so one failure doesn't stop the others
+      const loadPromises = [
+        loadSummaryCards().catch(err => {
+          console.error('Failed to load summary cards:', err);
+          errors.push('Summary cards: ' + (err.message || 'Unknown error'));
+          if (err.message && (err.message.includes('Unauthorized') || err.message.includes('Authentication') || err.message.includes('401'))) {
+            authError = true;
+          }
+        }),
+        loadPatientsData().catch(err => {
+          console.error('Failed to load patients:', err);
+          errors.push('Patients: ' + (err.message || 'Unknown error'));
+          if (err.message && (err.message.includes('Unauthorized') || err.message.includes('Authentication') || err.message.includes('401'))) {
+            authError = true;
+          }
+        }),
+        loadBillingData().catch(err => {
+          console.error('Failed to load billing:', err);
+          errors.push('Billing: ' + (err.message || 'Unknown error'));
+          if (err.message && (err.message.includes('Unauthorized') || err.message.includes('Authentication') || err.message.includes('401'))) {
+            authError = true;
+          }
+        }),
+        loadAppointmentCalendar().catch(err => {
+          console.error('Failed to load appointments:', err);
+          errors.push('Appointments: ' + (err.message || 'Unknown error'));
+          if (err.message && (err.message.includes('Unauthorized') || err.message.includes('Authentication') || err.message.includes('401'))) {
+            authError = true;
+          }
+        })
+      ];
+      
+      await Promise.allSettled(loadPromises);
+      
+      // Handle authentication errors
+      if (authError) {
+        alert('Your session has expired. Please login again.');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // Show errors if any
+      if (errors.length > 0) {
+        console.error('Some dashboard data failed to load:', errors);
+        const errorMsg = errors.join('\n');
+        if (errors.length === loadPromises.length) {
+          // All failed
+          alert('Could not load dashboard data:\n\n' + errorMsg + '\n\nPlease check:\n1. Database is running\n2. Database "sunrise_hospital" exists\n3. Tables are created\n4. You are logged in\n\nCheck browser console for more details.');
+        } else {
+          // Some failed
+          console.warn('Some dashboard sections failed to load:', errors);
+        }
+      }
+    }
+
+    async function loadSummaryCards() {
+      const data = await fetchJson('dashboard_summary.php');
+      patientsTodayEl.textContent = data.patients_today ?? 0;
+      appointmentsTodayEl.textContent = data.appointments_today ?? 0;
+      totalPaymentsEl.textContent = formatCurrency(data.total_payments ?? 0);
+      emergenciesEl.textContent = data.emergencies ?? 0;
+      renderRecentAppointments(data.recent_appointments || []);
+    }
+
+    function renderRecentAppointments(list) {
+      if (!list.length) {
+        recentAppointmentsBody.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center text-muted">No recent appointments</td>
+          </tr>`;
+        return;
+      }
+      recentAppointmentsBody.innerHTML = list.map(item => `
+        <tr>
+          <td>${item.patient_name}</td>
+          <td>${item.doctor}</td>
+          <td>${item.time}</td>
+          <td><span class="badge bg-secondary">${item.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadPatientsData() {
+      const data = await fetchJson('patients_list.php');
+      patientsCache = data.patients || [];
+      renderPatientRecords(patientsCache);
+      populatePatientSelects(patientsCache);
+    }
+
+    function renderPatientRecords(patients = []) {
+      if (!patients.length) {
+        patientRecordsBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center text-muted">No patient records found</td>
+          </tr>`;
+        return;
+      }
+      patientRecordsBody.innerHTML = patients.map(patient => `
+        <tr>
+          <td>${patient.id}</td>
+          <td>
+            <div class="patient-photo">
+              <i class="fas fa-user"></i>
+            </div>
+          </td>
+          <td>${patient.full_name}</td>
+          <td>${patient.age}</td>
+          <td>${patient.gender}</td>
+          <td>${patient.contact}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-eye"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function populatePatientSelects(patients = []) {
+      if (!patientSelects.length) return;
+      const options = [
+        '<option value="">Select Patient</option>',
+        ...patients.map(patient => `<option value="${patient.id}">${patient.full_name}</option>`)
+      ].join('');
+      patientSelects.forEach(select => {
+        const previous = select.value;
+        select.innerHTML = options;
+        if (previous) {
+          select.value = previous;
+        }
+      });
+    }
+
+    async function loadBillingData() {
+      const data = await fetchJson('billing_list.php');
+      renderBillingRecords(data.bills || []);
+    }
+
+    function renderBillingRecords(bills = []) {
+      if (!bills.length) {
+        billingRecordsBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center text-muted">No billing records found</td>
+          </tr>`;
+        return;
+      }
+      billingRecordsBody.innerHTML = bills.map(bill => `
+        <tr>
+          <td>${bill.id}</td>
+          <td>${bill.patient_name}</td>
+          <td>${bill.service_type}</td>
+          <td>${formatCurrency(bill.amount)}</td>
+          <td><span class="badge bg-secondary">${bill.status}</span></td>
+          <td>${bill.billing_date}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-print"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadAppointmentCalendar() {
+      const dateString = currentCalendarDate.toISOString().split('T')[0];
+      appointmentDateLabel.textContent = formatAppointmentDateLabel(currentCalendarDate);
+      const data = await fetchJson(`appointments_list.php?date=${dateString}`);
+      renderAppointmentCalendar(data.appointments || []);
+    }
+
+    function renderAppointmentCalendar(appointments = []) {
+      if (!appointments.length) {
+        appointmentCalendarBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center text-muted">No appointments for this date</td>
+          </tr>`;
+        return;
+      }
+      appointmentCalendarBody.innerHTML = appointments.map(appointment => `
+        <tr>
+          <td>${appointment.appointment_time}</td>
+          <td>${appointment.patient_name}</td>
+          <td>${appointment.doctor}</td>
+          <td>${appointment.department}</td>
+          <td><span class="badge bg-secondary">${appointment.status}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-edit"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Form Handlers
+    function handleAjaxForm(formId, endpoint, onSuccess, successMessage = 'Saved successfully.') {
+      const form = document.getElementById(formId);
+      if (!form) return;
+      form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        try {
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+          submitBtn.disabled = true;
+          
+          const data = await fetchJson(endpoint, {
+            method: 'POST',
+            body: formData,
+          });
+          
+          alert(data.message || successMessage);
+          form.reset();
+          if (typeof onSuccess === 'function') {
+            onSuccess(data);
+          }
+        } catch (error) {
+          console.error(error);
+          alert(error.message || 'Request failed. Please try again.');
+        } finally {
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+        }
+      });
+    }
+
+    // Load User Info
+    async function loadUserInfo() {
+      try {
+        // Try to get user info from sessionStorage first
+        const user = sessionStorage.getItem('user');
+        if (user) {
+          try {
+            const userData = JSON.parse(user);
+            if (userData && userData.full_name) {
+              receptionistNameEl.textContent = userData.full_name;
+              return;
+            }
+          } catch (e) {
+            console.warn('Failed to parse user from sessionStorage:', e);
+          }
+        }
+        
+        // If not in sessionStorage or invalid, fetch from server
+        const data = await fetchJson('get_user_info.php');
+        if (data.user && data.user.full_name) {
+          receptionistNameEl.textContent = data.user.full_name;
+          // Store in sessionStorage for next time
+          sessionStorage.setItem('user', JSON.stringify(data.user));
+        } else {
+          receptionistNameEl.textContent = 'User';
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+        receptionistNameEl.textContent = 'User';
+        // If authentication fails, redirect to login
+        const errorMsg = error.message || '';
+        if (errorMsg.includes('Unauthorized') || errorMsg.includes('Authentication') || errorMsg.includes('401')) {
+          alert('Your session has expired. Please login again.');
+          window.location.href = 'login.html';
+        }
+      }
+    }
+
+    // Initialize Charts
+    function initializeCharts() {
+      const patientCtx = document.getElementById('patientChart').getContext('2d');
+      new Chart(patientCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Male', 'Female', 'Other'],
+          datasets: [{
+            data: [45, 52, 3],
+            backgroundColor: ['#007bff', '#e83e8c', '#6c757d']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            },
+            title: {
+              display: true,
+              text: 'Patients by Gender'
+            }
+          }
+        }
+      });
+
+      const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+      new Chart(revenueCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          datasets: [{
+            label: 'Revenue (KSh)',
+            data: [1200000, 1900000, 1500000, 2100000, 1800000, 2200000],
+            backgroundColor: '#28a745'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
+            },
+            title: {
+              display: true,
+              text: 'Monthly Revenue'
+            }
+          }
+        }
+      });
+
+      const appointmentCtx = document.getElementById('appointmentChart').getContext('2d');
+      new Chart(appointmentCtx, {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [{
+            label: 'Appointments',
+            data: [12, 19, 7, 15, 9, 11, 5],
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Weekly Appointment Trends'
+            }
+          }
+        }
+      });
+    }
+
+    // Test connection on page load
+    async function testConnection() {
+      try {
+        const response = await fetch('test_connection.php', {
+          credentials: 'same-origin'
+        });
+        const data = await response.json();
+        console.log('Connection test:', data);
+        
+        if (data.status === 'error' || !data.checks.database.connected) {
+          console.error('Database connection issue:', data.checks.database);
+          return false;
+        }
+        
+        if (!data.checks.tables.all_exist) {
+          console.warn('Some tables are missing:', {
+            expected: data.checks.tables.expected,
+            existing: data.checks.tables.existing
+          });
+        }
+        
+        return true;
+      } catch (error) {
+        console.error('Connection test failed:', error);
+        return false;
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Test connection first
+      const connectionOk = await testConnection();
+      if (!connectionOk) {
+        console.warn('Connection test failed, but continuing to load dashboard...');
+      }
+      
+      loadUserInfo();
+      initializeCharts();
+      loadDashboardData();
+
+      handleAjaxForm('patientForm', 'add_patient.php', () => {
+        loadPatientsData();
+        loadSummaryCards();
+      }, 'Patient registered successfully.');
+
+      handleAjaxForm('appointmentForm', 'schedule_appointment.php', () => {
+        loadAppointmentCalendar();
+        loadSummaryCards();
+      }, 'Appointment scheduled successfully.');
+
+      handleAjaxForm('billingForm', 'generate_bill.php', () => {
+        loadBillingData();
+        loadSummaryCards();
+      }, 'Bill generated successfully.');
+
+      handleAjaxForm('profileForm', 'update_profile.php', (data) => {
+        if (data.user && data.user.full_name) {
+          receptionistNameEl.textContent = data.user.full_name;
+          document.getElementById('profileFullName').value = data.user.full_name;
+        }
+      }, 'Profile updated successfully.');
+
+      handleAjaxForm('passwordForm', 'change_password.php', null, 'Password updated successfully.');
+
+      handleAjaxForm('preferencesForm', 'update_preferences.php', null, 'Preferences saved successfully.');
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

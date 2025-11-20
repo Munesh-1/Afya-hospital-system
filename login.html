@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hospital Receptionist System</title>
+
+  <!-- Bootstrap, Font Awesome & Chart.js -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body { 
+      background-color: #f5f7fa; 
+      font-family: 'Segoe UI', sans-serif; 
+    }
+    .login-section, .register-section {
+      min-height: 100vh; 
+      display: flex; 
+      align-items: center;
+      background-color: #f8f9fa;
+    }
+    .login-image-container, .register-image-container {
+      position: relative;
+      overflow: hidden;
+      min-height: 300px;
+    }
+    @media (min-width: 992px) {
+      .login-image-container, .register-image-container {
+        height: 100vh;
+      }
+    }
+    .login-image-container img, .register-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .login-image-overlay, .register-image-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(120deg, rgba(0,123,255,0.8), rgba(0,198,255,0.8));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      padding: 2rem;
+    }
+    .login-image-overlay h2, .register-image-overlay h2 {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+    .login-image-overlay p, .register-image-overlay p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+    .login-box, .register-box {
+      background: white; 
+      color: #333; 
+      border-radius: 10px;
+      box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.2); 
+      padding: 40px;
+      max-width: 450px;
+      margin: 0 auto;
+    }
+    @media (max-width: 991.98px) {
+      .login-box, .register-box {
+        padding: 30px 20px;
+      }
+    }
+    .dashboard { display: none; }
+    .navbar { background-color: #007bff; color: white; }
+    .navbar-brand { color: white !important; font-weight: bold; }
+    .sidebar { 
+      background-color: #007bff; 
+      color: white; 
+      min-height: 100vh; 
+      padding-top: 20px; 
+    }
+    .sidebar a { 
+      color: white; 
+      text-decoration: none; 
+      display: block; 
+      padding: 10px 20px; 
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar a:hover { background-color: #0056b3; }
+    .sidebar a.active { background-color: #0056b3; font-weight: bold; }
+    .section-title { border-bottom: 2px solid #007bff; margin-bottom: 15px; padding-bottom: 5px; }
+    .summary-card { color: white; border-radius: 10px; padding: 20px; }
+    .summary-icon { font-size: 2rem; opacity: 0.8; }
+    .dashboard-section { display: none; }
+    .dashboard-section.active { display: block; }
+    .table-responsive { max-height: 400px; overflow-y: auto; }
+    .patient-photo { 
+      width: 50px; 
+      height: 50px; 
+      border-radius: 50%; 
+      object-fit: cover; 
+      background-color: #e9ecef; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6c757d;
+    }
+    .form-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN SECTION -->
+  <section class="login-section" id="loginSection">
+    <div class="container-fluid g-0">
+      <div class="row g-0">
+        <!-- Image Column -->
+        <div class="col-lg-6 login-image-container">
+          <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
+               alt="Hospital" 
+               class="img-fluid">
+          <div class="login-image-overlay">
+            <div>
+              <h2><i class="fas fa-hospital"></i> Sunrise Hospital</h2>
+              <p>Your trusted healthcare partner<br>Committed to excellence in patient care</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Login Form Column -->
+        <div class="col-lg-6 d-flex align-items-center justify-content-center p-4">
+          <div class="login-box w-100 text-center">
+            <h3 class="mb-4"><i class="fas fa-hospital text-primary"></i> Sunrise Hospital</h3>
+            <h5 class="text-muted mb-4">Receptionist Login</h5>
+            <form id="loginForm" class="mt-3" action="login.php" method="POST">
+              <div class="mb-3">
+                <input type="text" name="username" class="form-control form-control-lg" placeholder="Username" required>
+              </div>
+              <div class="mb-3">
+                <input type="password" name="password" class="form-control form-control-lg" placeholder="Password" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                <i class="fas fa-sign-in-alt me-2"></i>Login
+              </button>
+            </form>
+            <p class="mt-3 text-muted">Don't have an account? 
+              <a href="#" id="showRegister" class="text-primary fw-bold">Register</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REGISTER SECTION -->
+  <section class="register-section" id="registerSection" style="display:none;">
+    <div class="container-fluid g-0">
+      <div class="row g-0">
+        <!-- Image Column -->
+        <div class="col-lg-6 register-image-container">
+          <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
+               alt="Hospital" 
+               class="img-fluid">
+          <div class="register-image-overlay">
+            <div>
+              <h2><i class="fas fa-user-plus"></i> Join Our Team</h2>
+              <p>Become part of Sunrise Hospital<br>Help us deliver exceptional patient care</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Register Form Column -->
+        <div class="col-lg-6 d-flex align-items-center justify-content-center p-4">
+          <div class="register-box w-100 text-center">
+            <h3 class="mb-4"><i class="fas fa-user-plus text-success"></i> Register Receptionist</h3>
+            <form id="registerForm" class="mt-3" action="register.php" method="POST">
+              <div class="mb-3">
+                <input type="text" name="full_name" class="form-control form-control-lg" placeholder="Full Name" required>
+              </div>
+              <div class="mb-3">
+                <input type="text" name="username" class="form-control form-control-lg" placeholder="Username" required>
+              </div>
+              <div class="mb-3">
+                <input type="password" name="password" class="form-control form-control-lg" placeholder="Password" required>
+              </div>
+              <div class="mb-3">
+                <input type="email" name="email" class="form-control form-control-lg" placeholder="Email" required>
+              </div>
+              <div class="mb-3">
+                <input type="tel" name="phone" class="form-control form-control-lg" placeholder="Phone Number" required>
+              </div>
+              <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
+                <i class="fas fa-user-plus me-2"></i>Create Account
+              </button>
+            </form>
+            <p class="mt-3 text-muted">Already registered? 
+              <a href="#" id="showLogin" class="text-primary fw-bold">Login</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard" id="dashboard">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#"><i class="fas fa-hospital"></i> Sunrise Hospital</a>
+        <div class="d-flex align-items-center">
+          <span class="me-3"><i class="fas fa-user me-1"></i> Receptionist: <strong id="receptionistName">-</strong></span>
+          <a href="logout.php" class="btn btn-danger btn-sm"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-2 sidebar">
+          <a href="#summary" class="nav-link active" data-section="summary"><i class="fas fa-chart-pie"></i> Dashboard</a>
+          <a href="#patients" class="nav-link" data-section="patients"><i class="fas fa-users"></i> Patients</a>
+          <a href="#appointments" class="nav-link" data-section="appointments"><i class="fas fa-calendar-check"></i> Appointments</a>
+          <a href="#billing" class="nav-link" data-section="billing"><i class="fas fa-file-invoice-dollar"></i> Billing</a>
+          <a href="#reports" class="nav-link" data-section="reports"><i class="fas fa-chart-bar"></i> Reports</a>
+          <a href="#settings" class="nav-link" data-section="settings"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+
+        <div class="col-md-10 p-4">
+          <!-- SUMMARY SECTION -->
+          <section id="summary" class="dashboard-section active">
+            <h4 class="section-title">📊 Dashboard Summary</h4>
+            <div class="row g-3 mb-4">
+              <div class="col-md-3">
+                <div class="summary-card bg-primary text-center">
+                  <i class="fas fa-user-injured summary-icon"></i>
+                  <h5>Patients Today</h5>
+                  <h3 id="patientsToday">0</h3>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="summary-card bg-success text-center">
+                  <i class="fas fa-calendar-day summary-icon"></i>
+                  <h5>Appointments</h5>
+                  <h3 id="appointmentsToday">0</h3>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="summary-card bg-warning text-center">
+                  <i class="fas fa-coins summary-icon"></i>
+                  <h5>Payments</h5>
+                  <h3 id="totalPayments">KSh 0</h3>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="summary-card bg-danger text-center">
+                  <i class="fas fa-exclamation-triangle summary-icon"></i>
+                  <h5>Emergencies</h5>
+                  <h3 id="emergencies">0</h3>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-8">
+                <div class="form-section">
+                  <h5 class="mb-3">Recent Appointments</h5>
+                  <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                      <thead class="table-light">
+                        <tr>
+                          <th>Patient</th>
+                          <th>Doctor</th>
+                          <th>Time</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody id="recentAppointments">
+                        <tr>
+                          <td colspan="4" class="text-center text-muted">No recent appointments</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-section">
+                  <h5 class="mb-3">Quick Actions</h5>
+                  <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" id="quickAddPatient">
+                      <i class="fas fa-user-plus me-2"></i>Add New Patient
+                    </button>
+                    <button class="btn btn-outline-success" id="quickSchedule">
+                      <i class="fas fa-calendar-plus me-2"></i>Schedule Appointment
+                    </button>
+                    <button class="btn btn-outline-warning" id="quickGenerateBill">
+                      <i class="fas fa-file-invoice me-2"></i>Generate Bill
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- PATIENTS SECTION -->
+          <section id="patients" class="dashboard-section">
+            <h4 class="section-title">👥 Patient Management</h4>
+            
+            <div class="form-section">
+              <h5 class="mb-3">Register New Patient</h5>
+              <form id="patientForm" action="add_patient.php" method="POST">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" class="form-control" name="full_name" required>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Age *</label>
+                    <input type="number" class="form-control" name="age" required>
+                  </div>
+                  <div class="col-md-2">
+                    <label class="form-label">Gender *</label>
+                    <select class="form-select" name="gender" required>
+                      <option value="">Select</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Contact *</label>
+                    <input type="tel" class="form-control" name="contact" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Address</label>
+                    <input type="text" class="form-control" name="address">
+                  </div>
+                  <div class="col-md-12">
+                    <label class="form-label">Medical History</label>
+                    <textarea class="form-control" name="medical_history" rows="2"></textarea>
+                  </div>
+                  <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary">Register Patient</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="form-section">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Patient Records</h5>
+                <div class="input-group w-25">
+                  <input type="text" class="form-control" placeholder="Search patients...">
+                  <button class="btn btn-outline-secondary" type="button">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>ID</th>
+                      <th>Photo</th>
+                      <th>Name</th>
+                      <th>Age</th>
+                      <th>Gender</th>
+                      <th>Contact</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="patientRecords">
+                    <tr>
+                      <td colspan="7" class="text-center text-muted">No patient records found</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- APPOINTMENTS SECTION -->
+          <section id="appointments" class="dashboard-section">
+            <h4 class="section-title">📅 Appointment Management</h4>
+            
+            <div class="form-section">
+              <h5 class="mb-3">Schedule New Appointment</h5>
+              <form id="appointmentForm" action="schedule_appointment.php" method="POST">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Patient *</label>
+                    <select class="form-select" name="patient_id" required>
+                      <option value="">Select Patient</option>
+                      <!-- Patient options will be populated from backend -->
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Doctor *</label>
+                    <select class="form-select" name="doctor" required>
+                      <option value="">Select Doctor</option>
+                      <option value="Dr. Kimani">Dr. Kimani</option>
+                      <option value="Dr. Aisha">Dr. Aisha</option>
+                      <option value="Dr. Johnson">Dr. Johnson</option>
+                      <option value="Dr. Wangari">Dr. Wangari</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Department *</label>
+                    <select class="form-select" name="department" required>
+                      <option value="">Select Department</option>
+                      <option value="Cardiology">Cardiology</option>
+                      <option value="Pediatrics">Pediatrics</option>
+                      <option value="Orthopedics">Orthopedics</option>
+                      <option value="Dermatology">Dermatology</option>
+                      <option value="Neurology">Neurology</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Date *</label>
+                    <input type="date" class="form-control" name="appointment_date" required>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Time *</label>
+                    <input type="time" class="form-control" name="appointment_time" required>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status">
+                      <option value="Scheduled">Scheduled</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                  <div class="col-md-12">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" name="notes" rows="2"></textarea>
+                  </div>
+                  <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary">Schedule Appointment</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="form-section">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h5 class="mb-0">Appointment Calendar</h5>
+                  <small class="text-muted" id="appointmentDateLabel"></small>
+                </div>
+                <div>
+                  <button class="btn btn-outline-primary btn-sm" id="todayBtn">Today</button>
+                  <button class="btn btn-outline-secondary btn-sm" id="prevDayBtn"><i class="fas fa-chevron-left"></i></button>
+                  <button class="btn btn-outline-secondary btn-sm" id="nextDayBtn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Time</th>
+                      <th>Patient</th>
+                      <th>Doctor</th>
+                      <th>Department</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="appointmentCalendar">
+                    <tr>
+                      <td colspan="6" class="text-center text-muted">No appointments for today</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- BILLING SECTION -->
+          <section id="billing" class="dashboard-section">
+            <h4 class="section-title">💰 Billing & Payments</h4>
+            
+            <div class="form-section">
+              <h5 class="mb-3">Generate New Bill</h5>
+              <form id="billingForm" action="generate_bill.php" method="POST">
+                <div class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Patient *</label>
+                    <select class="form-select" name="patient_id" required>
+                      <option value="">Select Patient</option>
+                      <!-- Patient options will be populated from backend -->
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Service Type *</label>
+                    <select class="form-select" name="service_type" required>
+                      <option value="">Select Service</option>
+                      <option value="Consultation">Consultation</option>
+                      <option value="Lab Test">Lab Test</option>
+                      <option value="X-Ray">X-Ray</option>
+                      <option value="Surgery">Surgery</option>
+                      <option value="Medication">Medication</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Amount (KSh) *</label>
+                    <input type="number" class="form-control" name="amount" step="0.01" required>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Payment Method *</label>
+                    <select class="form-select" name="payment_method" required>
+                      <option value="Cash">Cash</option>
+                      <option value="MPesa">MPesa</option>
+                      <option value="Card">Card</option>
+                      <option value="Insurance">Insurance</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status">
+                      <option value="Pending">Pending</option>
+                      <option value="Paid">Paid</option>
+                      <option value="Partial">Partial Payment</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Date *</label>
+                    <input type="date" class="form-control" name="billing_date" required>
+                  </div>
+                  <div class="col-md-12">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" name="description" rows="2"></textarea>
+                  </div>
+                  <div class="col-md-12">
+                    <button type="submit" class="btn btn-success">Generate Bill</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="form-section">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Billing Records</h5>
+                <div class="input-group w-25">
+                  <input type="text" class="form-control" placeholder="Search bills...">
+                  <button class="btn btn-outline-secondary" type="button">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Bill ID</th>
+                      <th>Patient</th>
+                      <th>Service</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="billingRecords">
+                    <tr>
+                      <td colspan="7" class="text-center text-muted">No billing records found</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- REPORTS SECTION -->
+          <section id="reports" class="dashboard-section">
+            <h4 class="section-title">📈 Reports & Analytics</h4>
+            
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <div class="form-section">
+                  <h5 class="mb-3">Patient Statistics</h5>
+                  <canvas id="patientChart" height="250"></canvas>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-section">
+                  <h5 class="mb-3">Revenue Overview</h5>
+                  <canvas id="revenueChart" height="250"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h5 class="mb-3">Appointment Trends</h5>
+              <canvas id="appointmentChart" height="100"></canvas>
+            </div>
+          </section>
+
+          <!-- SETTINGS SECTION -->
+          <section id="settings" class="dashboard-section">
+            <h4 class="section-title">⚙️ System Settings</h4>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-section mb-4">
+                  <h5 class="mb-3">User Profile</h5>
+                  <form id="profileForm" action="update_profile.php" method="POST">
+                    <div class="mb-3">
+                      <label class="form-label">Full Name</label>
+                      <input type="text" class="form-control" name="full_name" value="John Doe">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Username</label>
+                      <input type="text" class="form-control" name="username" value="johndoe">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Email</label>
+                      <input type="email" class="form-control" name="email" value="john.doe@hospital.com">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Phone</label>
+                      <input type="tel" class="form-control" name="phone" value="+254712345678">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                  </form>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="form-section mb-4">
+                  <h5 class="mb-3">Change Password</h5>
+                  <form id="passwordForm" action="change_password.php" method="POST">
+                    <div class="mb-3">
+                      <label class="form-label">Current Password</label>
+                      <input type="password" class="form-control" name="current_password">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">New Password</label>
+                      <input type="password" class="form-control" name="new_password">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Confirm New Password</label>
+                      <input type="password" class="form-control" name="confirm_password">
+                    </div>
+                    <button type="submit" class="btn btn-warning">Change Password</button>
+                  </form>
+                </div>
+                
+                <div class="form-section">
+                  <h5 class="mb-3">System Preferences</h5>
+                  <form id="preferencesForm" action="update_preferences.php" method="POST">
+                    <div class="form-check form-switch mb-3">
+                      <input class="form-check-input" type="checkbox" name="email_notifications" checked>
+                      <label class="form-check-label">Email Notifications</label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                      <input class="form-check-input" type="checkbox" name="sms_notifications">
+                      <label class="form-check-label">SMS Notifications</label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                      <input class="form-check-input" type="checkbox" name="auto_backup" checked>
+                      <label class="form-check-label">Auto Backup</label>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary">Save Preferences</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+// Enhanced AJAX form handling for all forms
+async function handleFormSubmit(form, url, successMessage) {
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    try {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            alert(successMessage);
+            form.reset();
+            return true;
+        } else {
+            alert('Error: ' + data.message);
+            return false;
+        }
+    } catch (error) {
+        alert('Network error. Please try again.');
+        console.error('Error:', error);
+        return false;
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Patient Form Submission
+document.getElementById('patientForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const success = await handleFormSubmit(this, 'add_patient.php', 'Patient registered successfully!');
+    if (success) {
+        await loadPatientsData(); // Refresh patient list
+    }
+});
+
+// Appointment Form Submission
+document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const success = await handleFormSubmit(this, 'schedule_appointment.php', 'Appointment scheduled successfully!');
+    if (success) {
+        await loadAppointmentCalendar(); // Refresh appointments
+        await loadDashboardData(); // Refresh dashboard
+    }
+});
+
+// Billing Form Submission
+document.getElementById('billingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const success = await handleFormSubmit(this, 'generate_bill.php', 'Bill generated successfully!');
+    if (success) {
+        await loadBillingData(); // Refresh billing records
+        await loadDashboardData(); // Refresh dashboard
+    }
+});
+
+// Profile Form Submission
+document.getElementById('profileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await handleFormSubmit(this, 'update_profile.php', 'Profile updated successfully!');
+});
+
+// Password Form Submission
+document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await handleFormSubmit(this, 'change_password.php', 'Password changed successfully!');
+});
+
+// Preferences Form Submission
+document.getElementById('preferencesForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await handleFormSubmit(this, 'update_preferences.php', 'Preferences updated successfully!');
+});
+
+// Register Form Submission
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const success = await handleFormSubmit(this, 'register.php', 'Account created successfully!');
+    if (success) {
+        document.getElementById('showLogin').click(); // Go back to login
+    }
+});
+
+// Toggle between login and register
+document.getElementById('showRegister').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('registerSection').style.display = 'flex';
+});
+
+document.getElementById('showLogin').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('registerSection').style.display = 'none';
+    document.getElementById('loginSection').style.display = 'flex';
+});
+
+// Login Form Submission
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    try {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+        submitBtn.disabled = true;
+        
+        const response = await fetch('login.php', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin' // Important for session cookies
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            // Store user data temporarily if needed
+            sessionStorage.setItem('user', JSON.stringify(data.user));
+            // Redirect to dashboard
+            window.location.href = 'dashboard.html';
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Network error. Please try again.');
+        console.error('Error:', error);
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+});
+
+// Register Form Submission
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    try {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+        submitBtn.disabled = true;
+        
+        const response = await fetch('register.php', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            alert('Account created successfully! Please login.');
+            document.getElementById('showLogin').click();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Network error. Please try again.');
+        console.error('Error:', error);
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+});
+</script>
+
+</body>
+</html>
